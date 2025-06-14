@@ -1,0 +1,34 @@
+Fix_1_gene_Overview Royal Truman
+
+<https://github.com/RoyalTr/Fix_1_gene>
+
+This Python program, **fix_1_gene**, **simulates the fixation probability of two alleles (A and a) for a single gene, and the number of generations required**. It can be used to test assumptions commonly found in evolutionary and young earth creationist models, specifically regarding **initial allele proportions and selection coefficients**.
+
+**Program Overview and assumptions**
+
+The simulation operates under the following key principles:
+
+- **Wright-Fisher Model**: The program assumes **random mating** within the population.
+- **Population Growth**: Population size changes are modeled using the **discrete Beverton-Holt model**.
+- **Fitness Calculation**: The average fitness of the population is recalculated every generation. This calculation is based on the relative fitness values of the three genotypes (AA, Aa, and aa) and their current proportions within the population.
+
+**Simulation Process**
+
+The program runs multiple simulations (controlled by variable Repetitions) for various user-defined scenarios. Each scenario is configured via an input_data.txt file, where users specify parameters such as:
+
+- **Initial population size (Ni)**
+- **Population growth rate (r)**
+- **Carrying capacity (K)**
+- **Selection coefficient for allele A** (parameter s_A)
+- **Number of simulation attempts** (parameter attempts)
+- **Dominance coefficient for allele A** (parameter h_A}
+- **Initial frequency of allele A** (p_A_i)
+
+For each simulation attempt, the program iteratively calculates the allele frequencies, genotype frequencies, and mean population fitness. It then uses a binomial distribution to model random genetic drift and determine the allele frequencies in the next generation. The simulation continues until one of the alleles fixes (reaches a frequency of 0 or effectively 1).
+
+**Output and Analysis**
+
+- **Individual Simulation Results**: Saved in results_data.txt, providing details for each repetition of every scenario.
+- **Averaged Results**: Average of the results across all repetitions for each scenario is stored in results_data_avg.txt. These nclude the probability of fixation for both alleles, the average number of generations to fixation, and the standard deviations for these metrics.
+
+The program leverages multiprocessing to run simulations in parallel, optimizing execution time.
