@@ -1,0 +1,77 @@
+The following only has to be done once and not for every project.
+======================
+Step 1: Install Python on Windows if not already installed.
+Go to: https://www.python.org/downloads/windows/
+Click the latest Python 3.x.x version for Windows.
+Click the box that says: "Add Python to PATH"
+Click "Install Now"
+
+Step 2: Open the Command Prompt
+Press Windows + R, type cmd, then press Enter.
+
+To find all the python versions installed on your PC, enter
+cd C:\Users\ME\AppData\Local\Programs\Python\
+where ME is your user directory on that PC.
+Type: dir
+You will see one or more directory names, for example:
+Python313
+Python39
+
+Pick the highest Python version number we'll call PythonXXX (e.g., Python313)
+Type: cd PythonXXX,
+where XXX refers to the Python directory number, e.g. 313.
+Type: python --version
+You should get a reply like for example Python 3.13.3
+
+Step 3: Install Git for Windows (if not already done) using an Internet browser:
+https://git-scm.com/downloads
+Click on "Windows"
+Click on "Click here to download"
+Store the file into your download directory and then double click on that file (it is called something like Git-*.exe).
+Accept the default installation directory, C:\Program Files\Git and all the other default recommendations.
+======================
+
+The following has to be done for a new project.
+In the cmd window, navigate to a folder where you want the project directory to be created and installed. For example:
+Type: cd C:\Users\ME\
+where ME is the user name directory on your computer.
+
+Type: git clone https://github.com/RoyalTr/Fix_1_gene.git               
+
+This creates a folder called "Fix_1_gene" with all the code inside.
+
+Step 4: Create a Virtual Environment
+Type: cd Fix_1_gene
+Type: C:\Users\ME\AppData\Local\Programs\Python\\python.exe -m venv venv
+Be sure to first replace ME by your user name and PythonXXX by the python director number you want to use!
+
+Type: venv\Scripts\activate
+
+Type: pip install -r requirements.txt
+
+Step 6: Run the Program
+Type: python fix_1_gen.py
+
+Optional but recommended: Create a .bat script to run everything easily later:
+
+@echo off
+cd /d C:\Users\ME\Fix_1_gene
+call venv\Scripts\activate
+python fix_1_gene.py
+pause
+
+Store as a text file called Run_Fix_1_gene.bat in a directory like C:\Users\ME,
+where ME is your user name directory on the PC.
+
+To test, exit the cmd and then start cmd again.
+Type: Run_Fix_1_gene
+from any directory.
+
+Note: After running Run_Fix_1_gene.bat with the internal variable document_results_every_generation = True
+in Fix_1_gene, one can then type: python aver_each_gen_per_attempt_and_sim.py
+to format the file results_data_per_generation.txt that had been created.
+
+======================
+
+Everything should now be installed. You can change the simulation parameters in the file C:\Users\ME\input_data.txt.
+The resulting *.txt files contain the data with each column separated by ';'. These files can be used with spreadsheets or other software to generate graphics.
