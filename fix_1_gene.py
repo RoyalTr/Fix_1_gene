@@ -5,9 +5,9 @@ import time
 import multiprocessing
 
 # Global variables user can change
-Repetitions = 20  # No. of times to rerun using the same parameter values. Max is hardware dependent.
-generations = 100000000  # Prevent endless runs. Set to small nr. to view short initial trajectories or to debug.
-document_results_every_generation = True  # Set to True to output detailed per-generation data
+Repetitions = 20 # No. of times to rerun using the same parameter values. Max is hardware dependent.
+generations = 100000000 # Prevent endless runs. Set to small nr. to view short initial trajectories or to debug.
+document_results_every_generation = True # Set to True to output detailed per-generation data
 
 # Prevent system sleep on Windows (when running overnight)
 if os.name == 'nt':
@@ -154,21 +154,21 @@ if error_found:
 
 def simulate_population(Ni, r, K, s_A, p_A_i, generations, attempts, h_A):
     # Initial counters for the simulation run
-    a_count = 0  # Count when a-allele fixes
-    A_count = 0  # Count when A-allele fixes
-    sum_A_fix_gens = 0.0  # Sum of generations for A fixation
-    sum_A_fix_gens_sq = 0.0  # Sum of squared generations for A fixation
-    sum_a_fix_gens = 0.0  # Sum of generations for a fixation
-    sum_a_fix_gens_sq = 0.0  # Sum of squared generations for a fixation
-    sum_N_A_final = 0.0  # Sum population size when A fixes
-    sum_N_a_final = 0.0  # Sum population size when a fixes
+    a_count = 0 # Count when a-allele fixes
+    A_count = 0 # Count when A-allele fixes
+    sum_A_fix_gens = 0.0 # Sum of generations for A fixation
+    sum_A_fix_gens_sq = 0.0 # Sum of squared generations for A fixation
+    sum_a_fix_gens = 0.0 # Sum of generations for a fixation
+    sum_a_fix_gens_sq = 0.0 # Sum of squared generations for a fixation
+    sum_N_A_final = 0.0 # Sum population size when A fixes
+    sum_N_a_final = 0.0 # Sum population size when a fixes
         
     # Pre-calculate Beverton-Holt constants to increase performance
     r_plus_1 = 1.0 + r
     r_div_K = r / K
 
     # List to store per-generation data for all attempts
-    per_generation_data = []  # Used if document_results_every_generation = True
+    per_generation_data = [] # Used if document_results_every_generation = True
 
     # Calculate fitness for each genotype
     fitness_AA = 1.0 + s_A
@@ -177,9 +177,9 @@ def simulate_population(Ni, r, K, s_A, p_A_i, generations, attempts, h_A):
             
     # Run the simulation for all attempts
     for attempt_idx in range(1, attempts + 1):
-        N = Ni  # Reset population size
-        p_A_fix = 1 - (1 / (2 * N))  # Definition of fixation threshold
-        p_A_t = p_A_i  # Reset A-allele proportion for each attempt
+        N = Ni # Reset population size
+        p_A_fix = 1 - (1 / (2 * N)) # Definition of fixation threshold
+        p_A_t = p_A_i # Reset A-allele proportion for each attempt
 
         for gen in range(generations):
             # The simulations consider the population state at the START of generation 'gen',
@@ -188,23 +188,24 @@ def simulate_population(Ni, r, K, s_A, p_A_i, generations, attempts, h_A):
             if document_results_every_generation:
                 freq_a = 1.0 - p_A_t
                 freq_Aa = 2.0 * p_A_t * freq_a
-                per_generation_data.append((attempt_idx, gen, N, p_A_t, freq_a, freq_Aa))
+                pan_homoz = p_A_t ** 2 + freq_a ** 2
+                per_generation_data.append((attempt_idx, gen, N, p_A_t, freq_a, freq_Aa, pan_homoz))
 
-            if p_A_t == 0.0:  # Check whether a-allele has fixed
-                a_count += 1  # Sum every time a-allele fixed for that attempt to calc. statistics
+            if p_A_t == 0.0: # Check whether a-allele has fixed
+                a_count += 1 # Sum every time a-allele fixed for that attempt to calc. statistics
                 fixation_gen = max(0, gen - 1)
                 sum_a_fix_gens += fixation_gen
                 sum_a_fix_gens_sq += fixation_gen * fixation_gen
                 sum_N_a_final += N
                 break
-            elif p_A_t > p_A_fix:  # Check whether A-allele has fixed
+            elif p_A_t > p_A_fix: # Check whether A-allele has fixed
                 A_count += 1
                 fixation_gen = max(0, gen - 1)
                 sum_A_fix_gens += fixation_gen
                 sum_A_fix_gens_sq += fixation_gen * fixation_gen
                 sum_N_A_final += N
                 break
-        
+    
             # Calculate genotype frequencies
             freq_AA = p_A_t * p_A_t
             freq_Aa = 2.0 * p_A_t * (1.0 - p_A_t)
@@ -220,16 +221,16 @@ def simulate_population(Ni, r, K, s_A, p_A_i, generations, attempts, h_A):
             # Denominator: The factor of 2.0 accounts for diploid individuals (2 alleles per individual)
             numerator_A = 2.0 * freq_AA * fitness_AA + freq_Aa * fitness_Aa
             fit_A = numerator_A / (2.0 * mean_fitness)
-        
-            if r != 0:  # r = 0 mean the population size is fixed
+    
+            if r != 0: # r = 0 mean the population size is fixed
                 N = round(N * r_plus_1 / (1.0 + r_div_K * N))
                 if N < 1:
                     N = 1
-                p_A_fix = 1 - (1 / (2 * N))  # For popul. growing in size, p_A_fix changes!
-        
+                p_A_fix = 1 - (1 / (2 * N)) # For popul. growing in size, p_A_fix changes!
+    
             n_A_alleles = np.random.binomial(2 * N, float(fit_A))
             p_A_t = n_A_alleles / (2 * N)
-        
+    
     # Calculate statistics
     avg_N_A = sum_N_A_final / A_count if A_count > 0 else np.nan
     avg_N_a = sum_N_a_final / a_count if a_count > 0 else np.nan
@@ -272,8 +273,11 @@ if __name__ == '__main__':
     if document_results_every_generation:
         if os.path.exists(results_filename_per_generation):
             os.remove(results_filename_per_generation)
+
+        # Write the new heading to the file once
         with open(results_filename_per_generation, "w") as f:
-            pass
+            f.write("SimNr;attempt;Rep;Ni;r;K;s_A;h_A;p_A_i;attempts;generation;N;freq_A;freq_Aa;pan_homoz;freq_a\n")
+
 
     jobs = []
     all_raw_per_generation_results = []
@@ -290,54 +294,45 @@ if __name__ == '__main__':
     # Unpack the results tuple from the worker function.
     # The tuple now correctly contains all the original parameters.
     for res in results:
-        (sim_nr, rep, Ni, r, K, s_A, attempts, h_A, p_A_i, 
-         avg_N_A, avg_N_a, A_fix_prob, A_fix_sd, avg_A_fix_gen, 
-         std_A_fix_gen, a_fix_prob, a_fix_sd, avg_a_fix_gen, 
+        (sim_nr, rep, Ni, r, K, s_A, attempts, h_A, p_A_i,
+         avg_N_A, avg_N_a, A_fix_prob, A_fix_sd, avg_A_fix_gen,
+         std_A_fix_gen, a_fix_prob, a_fix_sd, avg_a_fix_gen,
          std_a_fix_gen, per_generation_data) = res
         
         individual_results_summary.append((
             sim_nr, rep, Ni, r, K, avg_N_A, avg_N_a, s_A, attempts, h_A, p_A_i,
-            A_fix_prob, A_fix_sd, avg_A_fix_gen, std_A_fix_gen, 
+            A_fix_prob, A_fix_sd, avg_A_fix_gen, std_A_fix_gen,
             a_fix_prob, a_fix_sd, avg_a_fix_gen, std_a_fix_gen
         ))
 
-        # Modified to store attempts value in the per-generation data structure
         for entry in per_generation_data:
             all_raw_per_generation_results.append({
                 'SimNr': sim_nr,
                 'attempt': entry[0],
+                'Rep': rep,
                 'Ni': Ni,
                 'r': r,
                 'K': K,
                 's_A': s_A,
-                'attempts': attempts,  # Added attempts field
                 'h_A': h_A,
                 'p_A_i': p_A_i,
-                'Rep': rep,
+                'attempts': attempts,
                 'generation': entry[1],
                 'N': entry[2],
                 'freq_A': entry[3],
                 'freq_a': entry[4],
-                'freq_Aa': entry[5]
+                'freq_Aa': entry[5],
+                'pan_homoz': entry[6]
             })
-
+        
     if document_results_every_generation:
+        # Sort by SimNr, then attempt, then Rep, and finally generation
         all_raw_per_generation_results_sorted = sorted(all_raw_per_generation_results,
-                                                         key=lambda x: (x['SimNr'], x['attempt'], x['Rep'], x['generation']))
+                                                       key=lambda x: (x['SimNr'], x['attempt'], x['Rep'], x['generation']))
         with open(results_filename_per_generation, "a") as f_gen:
-            current_sim_key = None
             for record in all_raw_per_generation_results_sorted:
-                sim_key = record['SimNr']  # Changed from sim_attempt_key to sim_key
-                if sim_key != current_sim_key:
-                    # Modified header to include 'attempts' instead of 'attempt'
-                    f_gen.write(f"\nSimNr;attempts;Ni;r;K;s_A;h_A;p_A_i\n")
-                    # Modified to write 'attempts' value instead of 'attempt'
-                    f_gen.write(f"{record['SimNr']};{record['attempts']};{record['Ni']};{record['r']};{record['K']};{record['s_A']};{record['h_A']};{record['p_A_i']}\n")
-                    # Changed the data header as requested by the user
-                    f_gen.write(f"SimNr;attempt;Rep;generation;N;freq_A;freq_a;freq_Aa\n")
-                    current_sim_key = sim_key
-                # Changed to write 'SimNr' and 'attempt' values as first columns in data rows
-                f_gen.write(f"{record['SimNr']};{record['attempt']};{record['Rep']};{record['generation']};{record['N']};{record['freq_A']:.8f};{record['freq_a']:.8f};{record['freq_Aa']:.8f}\n")
+                # Write the data row with pan_homoz included after freq_Aa
+                f_gen.write(f"{record['SimNr']};{record['attempt']};{record['Rep']};{record['Ni']};{record['r']};{record['K']};{record['s_A']};{record['h_A']};{record['p_A_i']};{record['attempts']};{record['generation']};{record['N']};{record['freq_A']:.8f};{record['freq_Aa']:.8f};{record['pan_homoz']:.8f};{record['freq_a']:.8f}\n")
         print(f"Detailed per-generation results stored in file {results_filename_per_generation}.")
 
     individual_results_sorted = sorted(individual_results_summary, key=lambda x: (x[0], x[1]))

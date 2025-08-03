@@ -22,7 +22,7 @@ def pad_and_average_reps(rep_data_list, max_generations):
     max_generations: Maximum generation across all Reps in this (SimNr, attempt)
     """
     n_reps = len(rep_data_list)
-    n_features = 3  # freq_A, freq_Aa, freq_a
+    n_features = 4  # freq_A, freq_Aa, freq_a, pan_homoz
     
     # Pre-allocate result array
     result = np.zeros((max_generations + 1, n_features))
@@ -54,10 +54,10 @@ def create_generation_lookup(entries):
             max_gen = gen
     
     # Initialize with -1 to indicate missing data
-    lookup = np.full((max_gen + 1, 3), -999.0)
+    lookup = np.full((max_gen + 1, 4), -999.0)
     
     for gen, vals in entries:
-        for i in range(3):
+        for i in range(4):
             lookup[gen, i] = vals[i]
     
     return lookup, max_gen
@@ -80,7 +80,7 @@ def load_data_optimized():
         
         # Pre-define column indices for faster access
         col_indices = [idx[col] for col in [
-            'freq_A', 'freq_Aa', 'freq_a']]
+            'freq_A', 'freq_Aa', 'freq_a', 'pan_homoz']]
         
         meta_indices = [idx[col] for col in [
             'Ni', 'r', 'K', 's_A', 'h_A', 'p_A_i', 'attempts']]
@@ -169,7 +169,7 @@ def complete_and_average_by_generation_optimized(raw_data, metadata, N_map):
         # Average across Reps for each generation - DIRECT AVERAGING WITHOUT HWE RECALCULATION
         for gen in range(max_gen_attempt + 1):
             values_array = np.array(gen_arrays[gen])
-            avg = np.mean(values_array, axis=0)  # Direct average of freq_A, freq_Aa, freq_a
+            avg = np.mean(values_array, axis=0)  # Direct average of freq_A, freq_Aa, freq_a, pan_homoz
             
             # Get N value
             N_key = (SimNr, attempt, gen)
@@ -252,7 +252,7 @@ def compute_per_simulation_averages_optimized(attempt_rows):
         
         for gen in range(max_gen_sim + 1):
             values_array = np.array(gen_dict[gen])
-            avg = np.mean(values_array, axis=0)  # Direct average of Ave_freq_A, Ave_freq_Aa, Ave_freq_a
+            avg = np.mean(values_array, axis=0)  # Direct average of Ave_freq_A, Ave_freq_Aa, Ave_freq_a, Ave_pan_homoz
             
             # Get N value
             max_g = max(g for (s, g) in N_map.keys() if s == SimNr)
@@ -266,7 +266,7 @@ def compute_per_simulation_averages_optimized(attempt_rows):
 def write_attempt_averages_optimized(rows):
     """Optimized file writing"""
     header = ('SimNr;attempt;Ni;r;K;s_A;h_A;p_A_i;attempts;generation;N;'
-              'Ave_freq_A;Ave_freq_Aa;Ave_freq_a\n')
+              'Ave_freq_A;Ave_freq_Aa;Ave_freq_a;Ave_pan_homoz\n')
     
     with open(ATTEMPT_OUTPUT, 'w') as f:
         f.write(header)
@@ -277,7 +277,7 @@ def write_attempt_averages_optimized(rows):
 def write_simulation_averages_optimized(rows):
     """Optimized file writing"""
     header = ('SimNr;Ni;r;K;s_A;h_A;p_A_i;attempts;generation;N;'
-              'Ave_freq_A;Ave_freq_Aa;Ave_freq_a\n')
+              'Ave_freq_A;Ave_freq_Aa;Ave_freq_a;Ave_pan_homoz\n')
     
     with open(SIM_OUTPUT, 'w') as f:
         f.write(header)
