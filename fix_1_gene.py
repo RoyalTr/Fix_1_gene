@@ -8,7 +8,7 @@ import warnings
 warnings.filterwarnings('ignore', 'Mean of empty slice', RuntimeWarning)
 
 # Global variables user can change
-Repetitions = 3 # No. of times to rerun using the same parameter values. Max is hardware dependent.
+Repetitions = 20 # No. of times to rerun using the same parameter values. Max is hardware dependent.
 generations = 100000000 # Prevent endless runs. Set to small nr. to view short initial trajectories or to debug.
 document_results_every_generation = True # Set to True to output detailed per-generation data
 
@@ -430,4 +430,5 @@ if __name__ == '__main__':
             
     end_time = time.time()
     execution_time = end_time - start_time
+
     print(f"\nExecution time required: {execution_time:.2f} seconds")
