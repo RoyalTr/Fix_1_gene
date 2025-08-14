@@ -8,7 +8,7 @@ import warnings
 warnings.filterwarnings('ignore', 'Mean of empty slice', RuntimeWarning)
 
 # Global variables user can change
-Repetitions = 20 # No. of times to rerun using the same parameter values. Max is hardware dependent.
+Repetitions = 3 # No. of times to rerun using the same parameter values. Max is hardware dependent.
 generations = 100000000 # Prevent endless runs. Set to small nr. to view short initial trajectories or to debug.
 document_results_every_generation = True # Set to True to output detailed per-generation data
 
@@ -90,8 +90,8 @@ for line_num, line in enumerate(lines[1:], start=2):
         continue
     try:
         r = float(parts[1])
-        if not (-10 <= r <= 10):
-            print(f"The value of r (growth rate / generation) in line {line_num} must be between -10 and 10. Please correct.")
+        if (r <= -1.0):
+            print(f"The value of r (growth rate / generation) in line {line_num} must be > -1.0. Please correct.")
             error_found = True
             continue
     except ValueError:
@@ -430,5 +430,4 @@ if __name__ == '__main__':
             
     end_time = time.time()
     execution_time = end_time - start_time
-
     print(f"\nExecution time required: {execution_time:.2f} seconds")
