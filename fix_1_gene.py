@@ -3,9 +3,12 @@ import os
 import sys
 import time
 import multiprocessing
+import warnings
+
+warnings.filterwarnings('ignore', 'Mean of empty slice', RuntimeWarning)
 
 # Global variables user can change
-Repetitions = 20 # No. of times to rerun using the same parameter values. Max is hardware dependent.
+Repetitions = 3 # No. of times to rerun using the same parameter values. Max is hardware dependent.
 generations = 100000000 # Prevent endless runs. Set to small nr. to view short initial trajectories or to debug.
 document_results_every_generation = True # Set to True to output detailed per-generation data
 
@@ -182,9 +185,6 @@ def simulate_population(Ni, r, K, s_A, p_A_i, generations, attempts, h_A):
         p_A_t = p_A_i # Reset A-allele proportion for each attempt
 
         for gen in range(generations):
-            # The simulations consider the population state at the START of generation 'gen',
-            # before any selection, drift, or population growth dynamics are applied in this generation.
-            # The recorded p_A_t and frequencies reflect the status of generation 'gen-1'.
             if document_results_every_generation:
                 freq_a = 1.0 - p_A_t
                 freq_Aa = 2.0 * p_A_t * freq_a
@@ -193,14 +193,14 @@ def simulate_population(Ni, r, K, s_A, p_A_i, generations, attempts, h_A):
 
             if p_A_t == 0.0: # Check whether a-allele has fixed
                 a_count += 1 # Sum every time a-allele fixed for that attempt to calc. statistics
-                fixation_gen = max(0, gen - 1)
+                fixation_gen = gen
                 sum_a_fix_gens += fixation_gen
                 sum_a_fix_gens_sq += fixation_gen * fixation_gen
                 sum_N_a_final += N
                 break
             elif p_A_t > p_A_fix: # Check whether A-allele has fixed
                 A_count += 1
-                fixation_gen = max(0, gen - 1)
+                fixation_gen = gen
                 sum_A_fix_gens += fixation_gen
                 sum_A_fix_gens_sq += fixation_gen * fixation_gen
                 sum_N_A_final += N
@@ -222,11 +222,15 @@ def simulate_population(Ni, r, K, s_A, p_A_i, generations, attempts, h_A):
             numerator_A = 2.0 * freq_AA * fitness_AA + freq_Aa * fitness_Aa
             fit_A = numerator_A / (2.0 * mean_fitness)
     
-            if r != 0: # r = 0 mean the population size is fixed
-                N = round(N * r_plus_1 / (1.0 + r_div_K * N))
-                if N < 1:
-                    N = 1
-                p_A_fix = 1 - (1 / (2 * N)) # For popul. growing in size, p_A_fix changes!
+            # Use Beverton-Holt model for logistic growth.
+            # Use stochastic rounding to avoid N being stuck when N and r are very small.
+            if r != 0:
+                N_float = N * r_plus_1 / (1.0 + r_div_K * N)  # float average value
+                frac = N_float - int(N_float)
+                if np.random.random() < frac:
+                    N = int(N_float) + 1  # Round up with the relevant probability
+                else:
+                    N = int(N_float)
     
             n_A_alleles = np.random.binomial(2 * N, float(fit_A))
             p_A_t = n_A_alleles / (2 * N)
